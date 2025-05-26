@@ -7,7 +7,10 @@ import com.example.goorm_back.domain.clazz.ClazzReservation;
 import com.example.goorm_back.domain.clazz.ReviewBoard;
 import com.example.goorm_back.domain.utility.Payment;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
@@ -17,6 +20,9 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Member {
 
 	@Id
