@@ -49,7 +49,7 @@ class JwtTokenProviderTest {
 		String token = jwtTokenProvider.generateToken(expectedUserId, "aaa@aaa.com", "ADMIN");
 
 		// when
-		Long actualUserId = jwtTokenProvider.getUserId(token);
+		Long actualUserId = jwtTokenProvider.getUserIdFromToken(token);
 
 		// then
 		assertThat(actualUserId).isEqualTo(expectedUserId);
