@@ -1,38 +1,50 @@
 package com.example.goorm_back.controller;
 
-import static com.example.goorm_back.dto.KakaoTokenResponseDto.*;
-
-import com.example.goorm_back.dto.KakaoTokenResponseDto;
 import com.example.goorm_back.service.AuthService;
+import com.example.goorm_back.dto.JwtResponseDto;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@Slf4j
 @RestController
-@RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
 	private final AuthService authService;
 
-	@GetMapping("/kakao/callback")
-	public ResponseEntity<KakaoTokenResponseDto> kakaoLogin(
-		@RequestParam(required = false) String code) {
+	@GetMapping("/auth/kakao/callback")
+	public ResponseEntity<JwtResponseDto>
+	kakaoCallback(@RequestParam("code") String code) {
+		log.info("💡 받은 인가코드 = {}", code);
 
-		//  인가코드 누락된 경우 예외 처리
-		if (code == null || code.isBlank()) {
-			KakaoTokenResponseDto errorResponse = builder()
-				.isKakaoSuccess(false)
-				.code("AUTH-001")
-				.message("인가 코드가 전달되지 않았습니다.")
-				.build();
-
-			return ResponseEntity.badRequest().body(errorResponse);
-		}
-
-		String kakaoAccessToken = authService.getKakaoAccessToken(code);
-		return authService.kakaoLogin(kakaoAccessToken);
+		JwtResponseDto jwt = authService.kakaoLogin(code).getBody();
+		return ResponseEntity.ok(jwt);
 	}
-
-
 }
+
+
+	/* 테스트용
+	@GetMapping("/auth/kakao/callback")
+	public ResponseEntity<String> kakaoCallback(@RequestParam("code") String code) {
+		log.info("💡 받은 인가코드 = {}", code);
+		return ResponseEntity.ok("받은 인가코드: " + code);
+	}
+}
+*/
+
+/*
+	// 마이페이지용
+	@GetMapping("/api/mypage")
+	public ResponseEntity<String> myPage(HttpServletRequest request) {
+		String token = jwtTokenProvider.resolveToken(request); // JwtTokenProvider 안에 있어야 함!
+		Long userId = jwtTokenProvider.getUserIdFromToken(token);
+		return ResponseEntity.ok("안녕 공주님! 당신의 ID는 " + userId);
+	}
+}
+
+ */
