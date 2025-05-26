@@ -20,6 +20,7 @@ public class KakaoTokenResponseDto {
 	private String refresh_token; // 리프레시 토큰
 	private Integer expires_in; // 인증된 범위
 	private Integer refresh_token_expires_in; // 리프레시 토큰 만료 시간(초)
+	private String id_token;
 
 	private Boolean isKakaoSuccess;
 	private String code;
