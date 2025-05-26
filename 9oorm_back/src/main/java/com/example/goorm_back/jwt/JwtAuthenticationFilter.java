@@ -1,3 +1,4 @@
+
 package com.example.goorm_back.jwt;
 
 import jakarta.servlet.FilterChain;
@@ -5,36 +6,38 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-
+import java.rmi.server.ServerCloneException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-@Component
+@Log4j2
 @RequiredArgsConstructor
+@Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private final JwtTokenProvider jwtTokenProvider;
 
 	@Override
-	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-		FilterChain filterChain)
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 		throws ServletException, IOException {
 
-		// 요청에서 토큰 꺼냄
-		String token = jwtTokenProvider.resolveToken(request);
+		String token = resolveToken(request);
 
-		// 토큰 유효성 검사
 		if (token != null && jwtTokenProvider.validateToken(token)) {
-			Long userId = jwtTokenProvider.getUserId(token);
+			Long userId = jwtTokenProvider.getUserIdFromToken(token);
+			String role = jwtTokenProvider.getRoleFromToken(token);
 
-			// 인증 객체 생성 (우리는 아직 UserDetailsService를 안 쓰므로 임시 처리)
-			UsernamePasswordAuthenticationToken authentication =
-				new UsernamePasswordAuthenticationToken(userId, null, null);
+			// 필요하다면 CustomUserDetailsService로 사용자 정보를 DB에서 로드 가능
 
+			UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+				userId, null, jwtTokenProvider.getAuthorities(role) // GrantedAuthority로 변환
+			);
 			authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
 			SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -42,4 +45,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		filterChain.doFilter(request, response);
 	}
+
+	private String resolveToken(HttpServletRequest request) {
+		String bearerToken = request.getHeader("Authorization");
+		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+			return bearerToken.substring(7);
+		}
+		return null;
+	}
 }
+
