@@ -8,11 +8,14 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @EnableWebSecurity
 @Configuration
 @RequiredArgsConstructor
-public class FilterConfig {
+public class FilterConfig implements WebMvcConfigurer {
 
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
@@ -20,15 +23,45 @@ public class FilterConfig {
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
 			.csrf(csrf -> csrf.disable())
+			.cors(cors -> {
+			}) // CORS 활성화
+
 			.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/auth/**", "/oauth2/**", "/login/**").permitAll()
+				// 인증 없이 접근 가능한 엔드포인트
+				.requestMatchers(
+					"/auth/**",           // 카카오 콜백 등
+					"/oauth2/**",         // OAuth2 관련
+					"/login/**",          // 로그인 관련
+					"/",                  // 루트
+					"/error",             // 에러 페이지
+					"/favicon.ico",       // 파비콘
+					"/static/**"          // 정적 리소스
+				).permitAll()
+				// 그 외는 인증 필요
 				.anyRequest().authenticated()
 			)
-			.oauth2Login(oauth2 -> oauth2
-				.loginPage("/auth/login") // 커스텀 로그인 페이지가 있다면 명시
-			)
-			.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+			.oauth2Login().disable()
+			.addFilterBefore(jwtAuthenticationFilter,
+				UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}
+
+	;
+
+	// 전체 CORS 허용 (실서비스에서는 도메인 지정 권장)
+	@Override
+	public void addCorsMappings(CorsRegistry registry) {
+		registry.addMapping("/**")
+			.allowedOrigins("*")  // 개발 중만!
+			.allowedMethods("*")
+			.allowedHeaders("*")
+			.allowCredentials(false);
+	}
+
+	@Bean
+	public RestTemplate restTemplate() {
+		return new RestTemplate();
+	}
 }
+
