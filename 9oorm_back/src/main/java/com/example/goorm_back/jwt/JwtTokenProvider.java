@@ -1,6 +1,5 @@
 package com.example.goorm_back.jwt;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -20,15 +19,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtTokenProvider {
 
-	private final Dotenv dotenv = Dotenv.load();
-
 	private Key secretKey;
-	private final long expirationTime = Long.parseLong(dotenv.get("JWT_EXPIRATION")); // 밀리초 단위
-
+	private final long expirationTime = Long.parseLong(System.getenv("JWT_EXPIRATION")); // 밀리초 단위
 
 	@PostConstruct
 	public void init() {
-		String rawKey = dotenv.get("JWT_SECRET_KEY");
+		String rawKey = System.getenv("JWT_SECRET_KEY");
 		this.secretKey = Keys.hmacShaKeyFor(rawKey.getBytes());
 		System.out.println("🔐 secretKey = " + secretKey);
 		System.out.println("⏱ expirationTime = " + expirationTime);

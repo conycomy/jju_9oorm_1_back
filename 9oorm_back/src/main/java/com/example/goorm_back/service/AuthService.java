@@ -1,7 +1,6 @@
 package com.example.goorm_back.service;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.interfaces.DecodedJWT;
+
 import com.example.goorm_back.domain.user.Member;
 import com.example.goorm_back.domain.user.Role;
 import com.example.goorm_back.dto.JwtResponseDto;
@@ -9,7 +8,6 @@ import com.example.goorm_back.dto.KakaoTokenResponseDto;
 import com.example.goorm_back.dto.KakaoUserInfoDto;
 import com.example.goorm_back.jwt.JwtTokenProvider;
 import com.example.goorm_back.repository.MemberRepository;
-import io.github.cdimascio.dotenv.Dotenv;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.*;
@@ -31,10 +29,10 @@ public class AuthService {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final RestTemplate restTemplate;
 
-	private final Dotenv dotenv = Dotenv.load();
-	private final String kakaoClientId = dotenv.get("KAKAO_CLIENT_ID");
-	private final String kakaoClientSecret = dotenv.get("KAKAO_CLIENT_SECRET");
-	private final String kakaoRedirectUri = dotenv.get("KAKAO_REDIRECT_URI");
+	private final String kakaoClientId = System.getenv("KAKAO_CLIENT_ID");
+	private final String kakaoClientSecret = System.getenv("KAKAO_CLIENT_SECRET");
+	private final String kakaoRedirectUri = System.getenv("KAKAO_REDIRECT_URI");
+
 
 	@PostConstruct
 	public void init() {
